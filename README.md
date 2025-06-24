@@ -103,4 +103,9 @@ To run the arXiv to EPUB converter as a systemd service, follow these steps:
    sudo systemctl status arxiv-to-epub
    ```
 
+Another way to check the latest service logs is:
+   ```sh
+   journalctl -u arxiv-to-epub -f
+   ```
+
 This will set up the arXiv to EPUB converter to run as a systemd service, automatically starting on boot and restarting if it fails.
