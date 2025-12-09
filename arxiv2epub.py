@@ -20,6 +20,15 @@ def fetch_ar5iv_html(arxiv_id: str) -> str:
     for element in soup.find_all(["img", "table"]):
         element.decompose()
 
+    # Convert unordered lists to indented divs
+    for ul in soup.find_all("ul"):
+        ul.name = "div"
+
+    for li in soup.find_all("li"):
+        if li.parent.name == "div":
+            li.name = "div"
+            li["style"] = "padding-left: 2em;"
+
     return str(soup)
 
 
