@@ -32,12 +32,9 @@ def generate_epub(html_content: str, output_path: str) -> None:
     for math in math_elements:
         # Find the LaTeX annotation
         latex = math.find("annotation", {"encoding": "application/x-tex"})
-        if latex:
-            # Remove all mathml stuff and replace with normal latex
-            # webtex will then convert these into embedded inline images
-            new_script = soup.new_tag("script", type="math/tex")
-            new_script.string = latex.string.strip()
-            math.replace_with(new_script)
+        if latex and latex.string:
+            # Just insert the raw latex string
+            math.replace_with(soup.new_string(latex.string.strip()))
         else:
             # If no LaTeX found, remove the math element
             math.decompose()
@@ -48,9 +45,7 @@ def generate_epub(html_content: str, output_path: str) -> None:
         to="epub",
         format="html",
         outputfile=output_path,
-        extra_args=[
-            "--webtex",
-        ],
+        extra_args=[],
     )
 
 

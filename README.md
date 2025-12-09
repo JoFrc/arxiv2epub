@@ -6,6 +6,8 @@ This is a fork version.
 
 - remove docker, using conda to run the code. 
 - support one file only.
+- remove all figure & table.
+- remove equation render, use plain text only.
 
 ## Usage
 
