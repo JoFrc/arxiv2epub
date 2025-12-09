@@ -11,36 +11,15 @@ import shutil
 AR5IV_BASE_URL: str = "https://ar5iv.labs.arxiv.org/html/"
 
 
-def fetch_ar5iv_html_and_images(arxiv_id: str, output_folder: str) -> str:
+def fetch_ar5iv_html(arxiv_id: str) -> str:
     url: str = f"{AR5IV_BASE_URL}{arxiv_id}"
     response: requests.Response = requests.get(url)
     soup = BeautifulSoup(response.text, "html.parser")
 
-    # Create a subdirectory for images
-    image_dir = os.path.join(output_folder, f"{arxiv_id}_images")
-    os.makedirs(image_dir, exist_ok=True)
+    # Remove all images and tables
+    for element in soup.find_all(["img", "table"]):
+        element.decompose()
 
-    # Download images and update their paths in the HTML
-    for i, img in enumerate(soup.find_all("img")):
-        src = img.get("src")
-        if src:
-            if src.startswith("data:"):
-                # Handle data URLs
-                continue
-            else:
-                # Handle regular URLs
-                full_url = urljoin(url, src)
-                filename = os.path.basename(urlparse(full_url).path)
-                local_path = os.path.join(image_dir, filename)
-
-                try:
-                    img_response = requests.get(full_url)
-                    if img_response.status_code == 200:
-                        with open(local_path, "wb") as f:
-                            f.write(img_response.content)
-                        img["src"] = os.path.abspath(local_path)
-                except requests.RequestException:
-                    print(f"Failed to download image: {full_url}")
     return str(soup)
 
 
@@ -117,14 +96,9 @@ def process_arxiv_id(
         os.makedirs(output_folder, exist_ok=True)
         epub_output_path: str = os.path.join(output_folder, f"{filename}.epub")
         if not os.path.exists(epub_output_path):
-            html_content: str = fetch_ar5iv_html_and_images(arxiv_id, output_folder)
+            html_content: str = fetch_ar5iv_html(arxiv_id)
             generate_epub(html_content=html_content, output_path=epub_output_path)
             print(f"Generated EPUB: {epub_output_path}")
-
-            image_dir = os.path.join(output_folder, f"{arxiv_id}_images")
-            if os.path.exists(image_dir):
-                shutil.rmtree(image_dir)
-                print(f"Removed image folder: {image_dir}")
         else:
             print(f"Skipping EPUB generation - file already exists: {epub_output_path}")
 
